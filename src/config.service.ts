@@ -6,6 +6,11 @@ import * as lodash from 'lodash';
 
 import { parseBool } from './helpers';
 import { Auth } from '@waha/core/auth/config';
+import {
+  ListenOptions,
+  resolveListenOptions,
+  WAHA_LISTEN_HOST_ENV,
+} from '@waha/core/http/listen';
 
 @Injectable()
 export class WhatsappConfigService {
@@ -28,6 +33,17 @@ export class WhatsappConfigService {
       return this.configService.get('PORT');
     }
     return this.configService.get('WHATSAPP_API_PORT', '3000');
+  }
+
+  /**
+   * Socket address for app.listen. Independent of hostname / baseUrl.
+   * Throws InvalidListenHostError when WAHA_LISTEN_HOST is set but not an IP.
+   */
+  get listenOptions(): ListenOptions {
+    const listenHost = this.configService.get<string | undefined>(
+      WAHA_LISTEN_HOST_ENV,
+    );
+    return resolveListenOptions(this.port, listenHost);
   }
 
   get baseUrl(): string {

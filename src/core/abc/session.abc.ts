@@ -1,6 +1,9 @@
 import { MessageCappingTracker } from '@waha/core/abc/MessageCappingTracker';
 import { ReachoutTimelockTracker } from '@waha/core/abc/ReachoutTimelockTracker';
-import { getBrowserExecutablePath as getBrowserExecutablePathAutodetect } from '@waha/core/abc/session.browser';
+import {
+  browserLaunchArgs,
+  getBrowserExecutablePath as getBrowserExecutablePathAutodetect,
+} from '@waha/core/abc/session.browser';
 import { PluginRegistry } from '@waha/core/abc/session.plugin.registry';
 import { IMediaConverter } from '@waha/core/media/IMediaConverter';
 import { Ffmpeg } from '@waha/core/utils/ffmpeg';
@@ -326,7 +329,7 @@ export abstract class WhatsappSession {
                 status: value.status,
                 timestamp: timestamp,
                 data: value.data,
-              }) as SessionStatusUpdatePoint,
+              } as SessionStatusUpdatePoint),
           ),
           // keep the last 3 entries
           scan<SessionStatusUpdatePoint, SessionStatusUpdatePoint[]>(
@@ -459,61 +462,7 @@ export abstract class WhatsappSession {
   }
 
   getBrowserArgsForPuppeteer() {
-    // Run optimized version of Chrome
-    // References:
-    // https://github.com/pedroslopez/whatsapp-web.js/issues/1420
-    // https://github.com/wppconnect-team/wppconnect/issues/1326
-    // https://superuser.com/questions/654565/how-to-run-google-chrome-in-a-single-process
-    // https://www.bannerbear.com/blog/ways-to-speed-up-puppeteer-screenshots/
-    return [
-      '--disable-accelerated-2d-canvas',
-      '--disable-application-cache',
-      // DO NOT disable software rasterizer, it will break the video
-      // https://github.com/devlikeapro/waha/issues/629
-      // '--disable-software-rasterizer',
-      '--disable-client-side-phishing-detection',
-      '--disable-component-update',
-      '--disable-default-apps',
-      '--disable-dev-shm-usage',
-      '--disable-extensions',
-      '--disable-metrics',
-      // '--disable-features=site-per-process', // COMMENTED to test WEBJS stability
-      '--disable-gpu', // COMMENTED to test WEBJS stability
-      '--disable-offer-store-unmasked-wallet-cards',
-      '--disable-offline-load-stale-cache',
-      '--disable-popup-blocking',
-      '--disable-setuid-sandbox',
-      '--disable-site-isolation-trials',
-      '--disable-speech-api',
-      '--disable-sync',
-      '--disable-translate',
-      '--disable-web-security',
-      '--hide-scrollbars',
-      '--ignore-certificate-errors',
-      '--ignore-ssl-errors',
-      // https://github.com/devlikeapro/waha/issues/725
-      // '--in-process-gpu', // COMMENTED to test WEBJS stability
-      '--metrics-recording-only',
-      '--mute-audio',
-      '--no-default-browser-check',
-      '--no-first-run',
-      '--no-pings',
-      '--no-sandbox',
-      '--no-zygote',
-      '--password-store=basic',
-      '--renderer-process-limit=2',
-      '--safebrowsing-disable-auto-update',
-      '--use-mock-keychain',
-      '--window-size=1280,720',
-      '--disable-blink-features=AutomationControlled',
-      //
-      // Cache options
-      //
-      '--disk-cache-size=1073741824', // 1GB
-      // '--disk-cache-size=0',
-      // '--disable-cache',
-      // '--aggressive-cache-discard',
-    ];
+    return browserLaunchArgs(process.platform);
   }
 
   protected isDebugEnabled() {
