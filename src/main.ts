@@ -14,6 +14,7 @@ import { Logger } from 'pino';
 import pino from 'pino';
 
 import { WhatsappConfigService } from './config.service';
+import { listenNestApplication } from '@waha/core/http/listen';
 import { AppModuleCore } from './core/app.module.core';
 import { AllExceptionsFilter } from './nestjs/AllExceptionsFilter';
 import { getWAHAVersion, VERSION, WAHAVersion } from './version';
@@ -103,8 +104,18 @@ async function bootstrap() {
   AppModule.appReady(app, logger);
   app.enableShutdownHooks();
   const config = app.get(WhatsappConfigService);
-  await app.listen(config.port);
+  const listenOptions = config.listenOptions;
+  await listenNestApplication(app, listenOptions);
   logger.info(`WhatsApp HTTP API is running on: ${await app.getUrl()}`);
+  if (listenOptions.host === undefined) {
+    logger.info(
+      'WAHA_LISTEN_HOST is unset; the HTTP socket uses the Node default address',
+    );
+  } else {
+    logger.info(
+      `WAHA_LISTEN_HOST bound the HTTP socket to ${listenOptions.host}`,
+    );
+  }
   logger.info(VERSION, 'Environment');
 }
 
